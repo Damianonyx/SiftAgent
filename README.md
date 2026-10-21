@@ -68,6 +68,7 @@ Configuration reference: [Vercel static configuration](https://vercel.com/docs/p
 - `vercel.json`: static deployment configuration.
 - `scripts/verify-browser.cjs`: real Chromium layout and interaction checks.
 - `.github/workflows/website-checks.yml`: browser checks and screenshot artifacts.
+- `scripts/verify-deployment.cjs`: confirms the production URL serves the current files.
 
 The website has no API keys, wallet connection or live token-data requests.
 Animation supports reduced-motion preferences and pause controls.

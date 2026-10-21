@@ -30,3 +30,6 @@ jobs:
           name: website-browser-screenshots
           path: artifacts/browser/
           retention-days: 7
+      - name: Verify the production deployment
+        if: github.ref == 'refs/heads/main'
+        run: node scripts/verify-deployment.cjs
