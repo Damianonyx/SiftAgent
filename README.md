@@ -9,11 +9,13 @@ Your criteria. Your agent. Every call explained.
 
 ## About this repository
 
-This repository contains the Sift website, featuring:
+This repository contains the Sift website. The page follows a product-first
+structure inspired by Gloam, using Sift’s own branding, copy and simulation:
 
-- Yellow-and-black branding with an animated pixel mascot.
-- An introduction to Sift’s discovery and monitoring workflow.
-- Current capabilities and development updates.
+- A spacious hero with Sift’s original interactive pixel mascot.
+- Scatter, pause/resume and reduced-motion controls for the simulation.
+- A brief introduction, three product pillars and an interactive Telegram walkthrough.
+- Evidence principles, research use cases, data sources and private-test FAQs.
 - Links to the Telegram bot and GitBook documentation.
 - A responsive layout for mobile and desktop.
 
@@ -21,9 +23,10 @@ This repository contains the Sift website, featuring:
 
 Sift is in development and private testing, starting with Solana.
 
-Supported market checks, rule-based discovery and market monitoring
-are being tested. Conversational AI, verified liquidity protection,
-developer activity and bundle analysis remain in development.
+Supported market checks, rule-based discovery, selected on-chain evidence
+checks and market monitoring are being tested. Coverage varies by source
+and pool type. Complete bundle detection and universal lock verification
+are not available. Hosted AI interpretation depends on bot configuration.
 
 No wallet connection. No custody. No trade execution.
 
@@ -58,15 +61,32 @@ Configuration reference: [Vercel static configuration](https://vercel.com/docs/p
 
 - `dist/index.html`: page content and links.
 - `dist/styles.css`: responsive site styling.
-- `dist/hero.css`: dark hero layout and text reveals.
+- `dist/hero.css`: editorial hero and interactive simulation panel.
 - `dist/app.js`: particle animation, menu and walkthrough controls.
 - `dist/assets/`: supplied brand images and local font.
 - `scripts/package-preview.py`: optional offline HTML and source ZIP packaging.
 - `vercel.json`: static deployment configuration.
+- `scripts/verify-browser.cjs`: real Chromium layout and interaction checks.
+- `.github/workflows/website-checks.yml`: browser checks and screenshot artifacts.
 
 The website has no API keys, wallet connection or live token-data requests.
 Animation supports reduced-motion preferences and pause controls.
 See [VERIFICATION.md](VERIFICATION.md) for checks and remaining validation.
+
+## Browser verification
+
+The website remains dependency-free at runtime. Browser checks use Playwright
+as development tooling only:
+
+```sh
+npm install --no-save --package-lock=false playwright@1.56.1
+npx playwright install chromium
+node scripts/verify-browser.cjs
+```
+
+Checks cover 320–1440px layouts, the particle simulation, menu and walkthrough
+controls, reduced motion, and unavailable-canvas/JavaScript fallbacks.
+Screenshots are written to `artifacts/browser/` and uploaded by GitHub Actions.
 
 ## Links
 

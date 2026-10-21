@@ -39,6 +39,12 @@ const server = http.createServer(async (req, res) => {
       });
       assert.equal(collisions, false, `Hero overlap at ${width}px`);
       assert(await page.locator('#hero-title').isVisible());
+      const headlineFits = await page.evaluate(() => {
+        const text = document.querySelector('#hero-title em').getBoundingClientRect();
+        const copy = document.querySelector('.welcome-copy').getBoundingClientRect();
+        return text.right <= copy.right + 2;
+      });
+      assert(headlineFits, `Headline is clipped at ${width}px`);
       await page.screenshot({ path: path.join(artifacts, `sift-${width}.png`), fullPage: true });
       console.log(`PASS responsive layout ${width}px`);
     }
@@ -89,6 +95,7 @@ const server = http.createServer(async (req, res) => {
     assert.equal(await r.locator('#toggle-motion').getAttribute('aria-pressed'), 'true');
     assert(await r.locator('#scatter-pixels').isDisabled());
     await r.screenshot({ path: path.join(artifacts, 'mobile-reduced-motion.png'), fullPage: true });
+    await r.screenshot({ path: path.join(artifacts, 'hero-mobile.png') });
     const fallback = await browser.newContext();
     await fallback.addInitScript(() => { HTMLCanvasElement.prototype.getContext = () => null; });
     const f = await fallback.newPage(); await f.goto(url);
