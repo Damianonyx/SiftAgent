@@ -51,11 +51,14 @@
     });
   });
   next.addEventListener('click', () => showStep((selected + 1) % tabs.length));
+  document.querySelectorAll('[data-demo-step]').forEach(link => {
+    link.addEventListener('click', () => showStep(Number(link.dataset.demoStep)));
+  });
 
   // The animation samples only the supplied brand image. It never fetches
   // market data, creates a trading signal, or sends interaction telemetry.
   async function startPixelSimulation() {
-    const hero = document.querySelector('#home');
+    const hero = document.querySelector('.simulation');
     const image = document.querySelector('#mascot-source');
     const stage = document.querySelector('#pixel-stage');
     const canvas = document.querySelector('#signal-canvas');
@@ -107,9 +110,9 @@
     function sizeCanvas() {
       const box = stage.getBoundingClientRect();
       width = Math.max(1, box.width); height = Math.max(1, box.height);
-      logoSize = width <= 650 ? Math.min(width * 1.75, height * .98, 780) : Math.min(width * .66, height * 1.02, 970);
+      logoSize = Math.min(width * .96, height * 1.23, 560);
       logoLeft = (width - logoSize) / 2;
-      logoTop = height * .49 - logoSize / 2;
+      logoTop = height * .50 - logoSize / 2;
       const ratio = Math.min(window.devicePixelRatio || 1, 2);
       canvas.width = Math.round(width * ratio); canvas.height = Math.round(height * ratio);
       context.setTransform(ratio, 0, 0, ratio, 0, 0);
@@ -127,7 +130,7 @@
     function draw(still = false, step = 1) {
       context.clearRect(0, 0, width, height);
       const unit = logoSize / grid;
-      const cell = Math.max(1.1, unit * .3);
+      const cell = Math.max(1.1, unit * .48);
       const breath = still ? 0 : Math.sin(time * .48) * .008;
       const rotation = still ? 0 : Math.sin(time * .18) * .025;
       for (const p of motes) {
@@ -160,8 +163,8 @@
         }
         const flicker = still ? 1 : .8 + .2 * Math.sin(time * .45 + p.phase);
         const entrance = still ? 1 : .08 + .92 * Math.min(intro / 3, 1);
-        const opacity = (p.edge ? .62 : .12 + p.tone * .18) * flicker * entrance;
-        context.fillStyle = `rgba(230,204,104,${opacity})`;
+        const opacity = (p.edge ? .96 : .33 + p.tone * .45) * flicker * entrance;
+        context.fillStyle = `rgba(255,223,24,${opacity})`;
         context.fillRect(logoLeft + p.x * logoSize - cell / 2, logoTop + p.y * logoSize - cell / 2, cell, cell);
       }
     }
