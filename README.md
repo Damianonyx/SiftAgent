@@ -16,6 +16,7 @@ structure inspired by Gloam, using Sift’s own branding, copy and simulation:
 - Scatter, pause/resume and reduced-motion controls for the simulation.
 - A brief introduction, three product pillars and an interactive Telegram walkthrough.
 - Evidence principles, research use cases, data sources and private-test FAQs.
+- Direct web app entry points in the navigation, hero, closing section and footer.
 - Links to the Telegram bot and GitBook documentation.
 - A responsive layout for mobile and desktop.
 
@@ -96,6 +97,8 @@ Screenshots are written to `artifacts/browser/` and uploaded by GitHub Actions.
 
 ## Links
 
+- [Official website](https://siftagent-five.vercel.app/)
+- [Web app](https://siftagent-five.vercel.app/app/) — Telegram sign-in requires the running bot web backend.
 - [Telegram bot](https://t.me/SiftAgentbot)
 - [Documentation](https://siftagent.gitbook.io/sift/)
 - [Bot repository](https://github.com/Damianonyx/Sift-bot)

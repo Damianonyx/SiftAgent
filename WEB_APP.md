@@ -27,8 +27,8 @@ activity. It supports pointer interaction, pause and reduced motion.
 
 ## Connect the backend
 
-Use the corresponding `codex/web-workspace` branch of
-[Sift-bot](https://github.com/Damianonyx/Sift-bot/tree/codex/web-workspace).
+The shared backend is merged into the `codex/live-discovery-check` branch of
+[Sift-bot](https://github.com/Damianonyx/Sift-bot/tree/codex/live-discovery-check).
 The bot must run on Node 24. In that bot's local configuration, set:
 
 ```dotenv
@@ -54,7 +54,9 @@ this change does not migrate hosting or provision an always-on service.
 
 ## Vercel and origins
 
-The existing Vercel static deployment can serve `/app/` as a signed-out interface.
+The public [web app](https://siftagent-five.vercel.app/app/) is linked from the
+official website. It opens without the Vercel login used to protect branch previews.
+The existing Vercel static deployment serves `/app/` as a signed-out interface.
 It cannot run the long-lived polling bot or access its SQLite database. A static
 deployment alone is **not** a working backend. For this milestone, the bot's
 optional HTTP server serves the same `dist/app` files alongside `/api` on one
