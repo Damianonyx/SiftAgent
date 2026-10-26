@@ -18,7 +18,7 @@ const server = http.createServer(async (req, res) => {
   await fs.mkdir(artifacts, { recursive: true });
   await new Promise(resolve => server.listen(0, '127.0.0.1', resolve));
   const url = `http://127.0.0.1:${server.address().port}`;
-  const browser = await chromium.launch({ headless: true });
+  const browser = await chromium.launch({ headless: true, executablePath: process.env.CHROMIUM_EXECUTABLE || undefined });
   try {
     const context = await browser.newContext();
     const page = await context.newPage();

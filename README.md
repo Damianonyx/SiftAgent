@@ -9,7 +9,7 @@ Your criteria. Your agent. Every call explained.
 
 ## About this repository
 
-This repository contains the Sift website. The page follows a product-first
+This repository contains the Sift website and private web workspace. The page follows a product-first
 structure inspired by Gloam, using Sift’s own branding, copy and simulation:
 
 - A spacious hero with Sift’s original interactive pixel mascot.
@@ -31,6 +31,11 @@ are not available. Hosted AI interpretation depends on bot configuration.
 No wallet connection. No custody. No trade execution.
 
 ## Website development
+
+The new web app is at `dist/app/`. It shares Sift-bot's backend instead of
+duplicating the screening engine. See [WEB_APP.md](WEB_APP.md) for sign-in,
+setup, security boundaries and verified functionality. A static Vercel deploy
+shows the interface; functional sessions require the bot's optional web server.
 
 Built with HTML, CSS and JavaScript.
 
