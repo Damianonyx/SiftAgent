@@ -47,8 +47,9 @@ export function startMascot() {
     if (visible && !paused) { frame++; draw(); }
     animation = requestAnimationFrame(tick);
   };
-  source.onload = () => { card.classList.add('ready'); draw(); };
-  source.src = 'reference-art.jpg';
+  source.onload = () => { card.classList.add('ready'); button.hidden = false; draw(); };
+  source.onerror = () => { button.hidden = true; };
+  source.src = new URL('./reference-art.jpg', import.meta.url).href;
   new ResizeObserver(() => {
     width = card.clientWidth; height = card.clientHeight;
     const ratio = Math.min(devicePixelRatio || 1, 2);

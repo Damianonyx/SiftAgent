@@ -1,32 +1,43 @@
 # Verification
 
-Checked on 2026-10-21 for the Gloam-structure rebuild.
+## Public website · 2026-10-26
 
-- Real Chromium checks passed at 320, 390, 650, 768, 1024 and 1440px.
-- No horizontal page overflow, overlapping hero columns or clipped hero tagline.
-- The original canvas simulation animates, scatters, pauses and resumes.
-- Reduced-motion preferences start the simulation paused; the supplied mascot remains visible if canvas or JavaScript is unavailable.
-- Walkthrough tabs, arrow-key navigation, next-step controls and feature shortcuts work.
-- Mobile navigation opens and closes, supports Escape, closes on selection and resets after desktop resizing.
-- FAQ disclosure controls work. No browser JavaScript errors or missing local resources were observed.
-- Local asset references, in-page links, unique IDs and JavaScript syntax pass.
-- Desktop/mobile screenshots were captured for visual review.
+The page uses an open editorial layout inspired by AllScale with Sift’s own
+copy, yellow palette and approved rabbit artwork. It is a static site; the
+product previews are illustrative and do not execute scans or trades.
 
-Browser evidence: [successful verification run](https://github.com/Damianonyx/SiftAgent/actions/runs/39647991719).
-Screenshots are attached to that run and expire after seven days; the workflow can produce new ones.
+Verified in real Chromium:
 
-The layout adapts Gloam’s announcement, framed hero, product introduction, interactive demo, evidence, use-case, documentation and footer structure. All product copy and branding are Sift’s; the supplied mascot, banner and local pixel font are retained.
+- Responsive layouts at 320, 390, 650, 768, 1024 and 1440px, without horizontal overflow.
+- Visible app entry point on mobile, working navigation, keyboard dismissal and FAQ disclosures.
+- Website-to-workspace navigation from the header, hero, product preview and closing section.
+- The same rabbit artwork on the website and app, with working pause/resume controls.
+- Reduced-motion preferences and usable canvas/JavaScript fallbacks.
+- Local fonts and assets load without browser errors; no external font requests.
 
-The website is static. Demonstrations are illustrative and do not run Telegram discovery, monitoring, trading or AI requests. The existing Vercel configuration still serves `dist/` without a build, install step or environment variables.
+The page states that Solana is available today and other chains are planned.
+No additional chain integration is implied by the chain-neutral headline.
 
-Not validated: a physical iOS/Android device or other browser engines. Browser checks do not validate Telegram bot or provider behavior.
+## Shared web workspace
 
+Verified using the real bot web server and handlers with synthetic providers,
+a recording Telegram adapter and an isolated in-memory database:
 
-## Web workspace · 2026-10-26
+- One-use sign-in, HttpOnly session cookie and removal of the login fragment.
+- Description review, rule approval and separate scan activation.
+- Saved runner results and Copy CA.
+- Monitor review and start, desktop navigation and mobile account navigation.
+- Notification preferences remain unchanged when opened. An explicit preference
+  edit updates the shared account without modifying approved screening rules.
+- Advanced controls are disclosed in the account dialog; there is no settings
+  page or main-screen filter strip.
+- Sign-out, visible artwork, motion controls and responsive layouts.
 
-- Chromium: signed-out layout and connected browser-to-bot flows pass at 320, 390, 768 and 1440px.
-- Verified with synthetic data: one-use sign-in, shared criteria, explicit approval and activation, discovery results, Copy CA, monitor setup, navigation, logout and reduced motion.
-- The approved rabbit artwork is rendered directly from the reference; no replacement character is used.
-- The companion Sift-bot suite passes 279 tests, including eight HTTP/auth/shared-state tests.
-- Live Telegram sessions and public HTTPS routing remain unverified. Static Vercel hosting alone does not activate the bot API.
-- No paid API, hosting migration or live-account data was used in verification.
+The companion Sift-bot suite previously passed 279 tests. This interface change
+does not modify the bot backend. The public Vercel deployment serves static
+files; live Telegram sign-in and shared data still require activation of the
+bot web server and the same-origin API connection. Browser tests use no paid
+APIs, real Telegram messages or user database.
+
+Not validated: physical devices or non-Chromium engines. Synthetic integration
+tests do not establish live provider reliability or complete risk coverage.

@@ -3,22 +3,22 @@
 **Sift through the noise. Find your signal.**
 
 Sift is building a personal AI agent for discovering and monitoring
-memecoins based on your criteria, directly through Telegram.
+memecoins based on your criteria, through Telegram and a connected web workspace.
 
 Your criteria. Your agent. Every call explained.
 
 ## About this repository
 
-This repository contains the Sift website and private web workspace. The page follows a product-first
-structure inspired by Gloam, using Sift’s own branding, copy and simulation:
+This repository contains the Sift public website and private web workspace.
+The public page uses an open editorial layout inspired by AllScale, with Sift’s
+own colours, product copy and approved pixel rabbit artwork.
 
-- A spacious hero with Sift’s original interactive pixel mascot.
-- Scatter, pause/resume and reduced-motion controls for the simulation.
-- A brief introduction, three product pillars and an interactive Telegram walkthrough.
-- Evidence principles, research use cases, data sources and private-test FAQs.
-- Direct web app entry points in the navigation, hero, closing section and footer.
-- Links to the Telegram bot and GitBook documentation.
-- A responsive layout for mobile and desktop.
+- Clear headline and visible app entry point on desktop and mobile.
+- Animated rabbit, product previews and a three-step walkthrough.
+- Concise evidence, monitoring and coverage explanations.
+- Telegram and GitBook links.
+- A web workspace focused on describing criteria, reviewing rules and scouting.
+- Account and notification controls are disclosed only when needed.
 
 ## Project status
 
@@ -68,7 +68,8 @@ Configuration reference: [Vercel static configuration](https://vercel.com/docs/p
 - `dist/index.html`: page content and links.
 - `dist/styles.css`: responsive site styling.
 - `dist/hero.css`: editorial hero and interactive simulation panel.
-- `dist/app.js`: particle animation, menu and walkthrough controls.
+- `dist/app.js`: navigation and shared mascot initialization.
+- `dist/app/mascot.js`: the shared approved artwork and particle animation.
 - `dist/assets/`: supplied brand images and local font.
 - `scripts/package-preview.py`: optional offline HTML and source ZIP packaging.
 - `vercel.json`: static deployment configuration.
@@ -91,8 +92,8 @@ npx playwright install chromium
 node scripts/verify-browser.cjs
 ```
 
-Checks cover 320–1440px layouts, the particle simulation, menu and walkthrough
-controls, reduced motion, and unavailable-canvas/JavaScript fallbacks.
+Checks cover 320–1440px layouts, the particle simulation, menu and FAQ
+controls, app navigation, reduced motion, and unavailable-canvas/JavaScript fallbacks.
 Screenshots are written to `artifacts/browser/` and uploaded by GitHub Actions.
 
 ## Links

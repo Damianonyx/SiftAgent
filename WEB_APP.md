@@ -13,7 +13,12 @@ services introduced here.
 - Alerts: recorded calls and saved discovery/monitor reports, with Copy CA.
 - Performance: all-call paper observations, delivery counts and missing horizons.
 - Groups: existing owner destinations and the bot's admin-verified controls.
-- Settings: follow-ups, UTC quiet hours, preferences and account sign-out.
+- Account menu: sign-out and quick navigation, with follow-ups and UTC quiet
+  hours inside a closed notification-preferences disclosure. There is no settings page.
+
+The main screen has no filter strip or mode switch. Token checks start with a
+market snapshot; additional evidence types are tucked inside a disclosure. Saved
+screening rules and notification preferences are never replaced with UI defaults.
 
 Reviews appear in a dialog using the bot's original explanations and controls.
 Draft acceptance, approval and scan activation remain separate actions. Existing

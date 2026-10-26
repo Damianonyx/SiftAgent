@@ -3,7 +3,7 @@ const fs = require('node:fs/promises');
 const path = require('node:path');
 const crypto = require('node:crypto');
 const origin = 'https://siftagent-five.vercel.app';
-const files = ['index.html', 'styles.css', 'hero.css', 'app.js'];
+const files = ['index.html', 'styles.css', 'hero.css', 'app.js', 'app/index.html', 'app/workspace.js', 'app/workspace.css', 'app/mascot.js'];
 const hash = bytes => crypto.createHash('sha256').update(bytes).digest('hex');
 (async () => {
   const expected = new Map(await Promise.all(files.map(async file => [file, hash(await fs.readFile(path.resolve(__dirname, '../dist', file)))])));
