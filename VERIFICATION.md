@@ -20,3 +20,13 @@ The layout adapts Gloam’s announcement, framed hero, product introduction, int
 The website is static. Demonstrations are illustrative and do not run Telegram discovery, monitoring, trading or AI requests. The existing Vercel configuration still serves `dist/` without a build, install step or environment variables.
 
 Not validated: a physical iOS/Android device or other browser engines. Browser checks do not validate Telegram bot or provider behavior.
+
+
+## Web workspace · 2026-10-26
+
+- Chromium: signed-out layout and connected browser-to-bot flows pass at 320, 390, 768 and 1440px.
+- Verified with synthetic data: one-use sign-in, shared criteria, explicit approval and activation, discovery results, Copy CA, monitor setup, navigation, logout and reduced motion.
+- The approved rabbit artwork is rendered directly from the reference; no replacement character is used.
+- The companion Sift-bot suite passes 279 tests, including eight HTTP/auth/shared-state tests.
+- Live Telegram sessions and public HTTPS routing remain unverified. Static Vercel hosting alone does not activate the bot API.
+- No paid API, hosting migration or live-account data was used in verification.
