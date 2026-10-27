@@ -6,7 +6,7 @@ const path=require('node:path');
 const http=require('node:http');
 const {chromium}=require('playwright');
 const root=path.resolve(__dirname,'../dist');
-const types={'.html':'text/html','.css':'text/css','.js':'text/javascript','.png':'image/png','.jpg':'image/jpeg','.svg':'image/svg+xml','.woff':'font/woff'};
+const types={'.html':'text/html','.css':'text/css','.js':'text/javascript','.png':'image/png','.jpg':'image/jpeg','.svg':'image/svg+xml','.woff':'font/woff','.webmanifest':'application/manifest+json'};
 const server=http.createServer(async(req,res)=>{
   const name=new URL(req.url,'http://localhost').pathname;
   const file=path.resolve(root,'.'+(name.endsWith('/')?name+'index.html':name));

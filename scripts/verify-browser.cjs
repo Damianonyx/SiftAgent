@@ -6,7 +6,7 @@ const http = require('node:http');
 const { chromium } = require('playwright');
 const root = path.resolve(__dirname, '../dist');
 const artifacts = path.resolve(__dirname, '../artifacts/browser');
-const types = { '.html':'text/html', '.css':'text/css', '.js':'text/javascript', '.jpg':'image/jpeg', '.woff':'font/woff' };
+const types = { '.html':'text/html', '.css':'text/css', '.js':'text/javascript', '.jpg':'image/jpeg', '.png':'image/png', '.woff':'font/woff', '.webmanifest':'application/manifest+json' };
 const server = http.createServer(async (req,res) => {
   const pathname = decodeURIComponent(new URL(req.url,'http://localhost').pathname);
   const file = path.resolve(root, '.' + (pathname.endsWith('/') ? pathname+'index.html' : pathname));

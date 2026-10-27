@@ -30,6 +30,19 @@ The rabbit and city scene use the approved reference artwork directly (`referenc
 The pixel rabbit animation is decorative. Its motion is independent of market
 activity. It supports pointer interaction, pause and reduced motion.
 
+## Install identity
+
+The website and workspace share `dist/app/manifest.webmanifest`. The installed
+name is **Sift**, the launch URL is `/app/`, and the launch background is yellow.
+The icon set uses the full-body black pixel rabbit on yellow, including an Apple
+touch icon and a padded maskable icon for Android. The workspace's animated
+rabbit scene is unchanged.
+
+The browser and operating system control the launch-screen layout. Existing
+shortcuts may retain their old name or icon; removing the shortcut and installing
+again from `/app/` refreshes them. Installation still requires network access and
+does not activate the bot backend or add offline support.
+
 ## Connect the backend
 
 The shared backend is merged into the `codex/live-discovery-check` branch of

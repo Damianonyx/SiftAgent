@@ -3,7 +3,7 @@ const fs = require('node:fs/promises');
 const path = require('node:path');
 const crypto = require('node:crypto');
 const origin = 'https://siftagent-five.vercel.app';
-const files = ['index.html', 'styles.css', 'hero.css', 'app.js', 'app/index.html', 'app/workspace.js', 'app/workspace.css', 'app/mascot.js'];
+const files = ['index.html', 'styles.css', 'hero.css', 'app.js', 'app/index.html', 'app/workspace.js', 'app/workspace.css', 'app/mascot.js', 'app/manifest.webmanifest', 'app/icons/sift-32.png', 'app/icons/sift-180.png', 'app/icons/sift-192.png', 'app/icons/sift-512.png', 'app/icons/sift-maskable-512.png'];
 const hash = bytes => crypto.createHash('sha256').update(bytes).digest('hex');
 (async () => {
   const expected = new Map(await Promise.all(files.map(async file => [file, hash(await fs.readFile(path.resolve(__dirname, '../dist', file)))])));
@@ -15,7 +15,7 @@ const hash = bytes => crypto.createHash('sha256').update(bytes).digest('hex');
         if (!response.ok) throw new Error(`${file}: HTTP ${response.status}`);
         if (hash(Buffer.from(await response.arrayBuffer())) !== expected.get(file)) throw new Error(`${file}: deployment still serves different content`);
       }
-      console.log(`PASS production serves the exact HTML, CSS and JavaScript from this commit: ${origin}`);
+      console.log(`PASS production serves the exact pages, scripts, styles, install manifest and icons from this commit: ${origin}`);
       return;
     } catch (error) {
       console.log(`Deployment attempt ${attempt}/6: ${error.message}`);

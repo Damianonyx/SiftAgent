@@ -1,0 +1,17 @@
+{
+  "id": "/app/",
+  "name": "Sift",
+  "short_name": "Sift",
+  "description": "Find coins that match your rules.",
+  "lang": "en",
+  "start_url": "./",
+  "scope": "/app/",
+  "display": "standalone",
+  "background_color": "#fddf04",
+  "theme_color": "#fddf04",
+  "icons": [
+    { "src": "icons/sift-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icons/sift-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icons/sift-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}
