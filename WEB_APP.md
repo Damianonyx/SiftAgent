@@ -25,6 +25,23 @@ Draft acceptance, approval and scan activation remain separate actions. Existing
 unresolved instructions are retained. The app does not invent evidence, remove
 screening requirements, or infer a safe coin from a successful API request.
 
+Draft reviews link directly to supported mappings. Scope choices open a preview;
+applying a mapping still requires a separate action, followed by approval. The
+empty discovery view identifies drafts awaiting clarification and policies that
+require evidence Sift cannot currently establish. No scope is selected by default.
+
+Saved checks distinguish failed required rules, unknown evidence, source failures,
+matches and matches with warnings. Select a result to see the recorded rule
+outcomes and observed values without making a fresh provider request. A separate
+button requests a new token check. Unapproved drafts are not used for saved checks.
+
+Background refreshes preserve the monitor form, including focus and cursor
+position. Unsaved monitor inputs stay in memory across views and clear on sign-out
+or session expiry. A failed refresh shows a connection notice and the last loaded
+time instead of claiming the backend is connected. Closing a pending report does
+not cancel a submitted action; a late response cannot reopen it or replace a newer
+dialog. Review the saved state to confirm the outcome.
+
 The rabbit and city scene use the approved reference artwork directly (`reference-art.jpg`), with animated particles and actual account labels overlaid at runtime. The source image is unchanged; its example token rows are not used as app data.
 
 The pixel rabbit animation is decorative. Its motion is independent of market
@@ -62,11 +79,12 @@ Keep the existing bot token, tester allowlist and data directory. Start the bot
 once with `npm start`. Do not start a second polling process or copy its database
 into this repository. Send `/web` privately to @SiftAgentbot and open its link.
 
-On Codespaces, forward port 3000 and configure its exact HTTPS origin in
-`SIFT_WEB_ORIGIN`, with `SIFT_WEB_HOST=0.0.0.0`. Keep the forwarded port private
-while testing as its owner. Codespaces access authentication is separate from
-Sift's tester authentication. Other testers need a reachable deployment later;
-this change does not migrate hosting or provision an always-on service.
+On Codespaces, use `npm run start:web` from the bot repository. It sets the exact
+forwarded HTTPS origin automatically and binds to loopback port 3000. Stop the
+previous bot terminal first, then keep the forwarded port private while testing
+as its owner. Codespaces access authentication is separate from Sift's tester
+authentication. Other testers need a reachable deployment later; this change
+does not migrate hosting or provision an always-on service.
 
 [Open the existing Codespace](https://effective-carnival-wr5j9v5g9775c95q9.github.dev/).
 
@@ -107,6 +125,7 @@ npx playwright install chromium
 node scripts/verify-workspace-static.cjs
 SIFT_BOT_ROOT=../Sift-bot node scripts/verify-workspace.cjs
 SIFT_BOT_ROOT=../Sift-bot node scripts/verify-workspace-proxy.cjs
+SIFT_BOT_ROOT=../Sift-bot node scripts/verify-workspace-recovery.cjs
 ```
 
 The integration test uses the real web server, store, parser, approval controls,
@@ -121,6 +140,12 @@ and the same isolated bot fixture to check browser sign-in, Secure/HttpOnly
 cookies, commands and logout when a tunnel rewrites both Host and Origin. A
 cross-origin browser login remains rejected even if its Origin is rewritten.
 The test certificate is deleted afterwards; no TLS checks are disabled in Sift.
+
+The recovery regression uses a phone browser profile to exercise scope previews,
+mapping and approval, incomplete evidence blocking delivery, saved-result details,
+refresh while typing, a simulated connection outage, delayed report responses,
+session revocation and isolation of unsaved inputs between accounts. All data and
+deliveries remain synthetic and local to the test runtime.
 
 Live activation with the operator's bot token, public HTTPS routing and real
 testers has not been verified by these tests. No new positive risk-evidence

@@ -8,14 +8,25 @@ const button=(label,fn,style='outline')=>el('button',{class:`button ${style}`,on
 const commandButton=(label,cmd,style='outline')=>button(label,()=>runCommand(cmd,label),style);
 const date=t=>Number.isFinite(t)?new Date(t).toLocaleString(undefined,{month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'}):'No observation yet';
 const short=ca=>typeof ca==='string'?`${ca.slice(0,6)}…${ca.slice(-5)}`:'Unknown token';
-const fmt=n=>Number.isFinite(n)?new Intl.NumberFormat(undefined,{style:'currency',currency:'USD',maximumFractionDigits:0}).format(n):'Unknown';
-let csrf=null,workspace=null,view='discover',pending=false,toastTimer,refreshTimer,authGeneration=0;
+const fmt=(n,digits=0)=>Number.isFinite(n)?new Intl.NumberFormat(undefined,{style:'currency',currency:'USD',minimumFractionDigits:0,maximumFractionDigits:digits}).format(n):'Unknown';
+let csrf=null,workspace=null,view='discover',pending=false,toastTimer,refreshTimer,authGeneration=0,dialogVersion=0,refreshSequence=0,connectionState='loading';
+let watchDraft={ca:'',drop:'',hours:''};
 const nav=[['discover','Discover','discover'],['agent','My agent','agent'],['watchlist','Watchlist','watch'],['alerts','Alerts','alerts'],['performance','Performance','performance'],['groups','Groups','groups']];
 
 function toast(text){clearTimeout(toastTimer);$('#toast').textContent=text;$('#toast').hidden=false;toastTimer=setTimeout(()=>$('#toast').hidden=true,4500);}
-async function api(path,body){const response=await fetch(`/api/${path}`,{method:body?'POST':'GET',credentials:'same-origin',cache:'no-store',headers:body?{'Content-Type':'application/json','X-Sift-CSRF':csrf||''}:{},...(body?{body:JSON.stringify(body)}:{})});let data;try{data=await response.json();}catch{throw Error('The web backend is not connected at this address. Open the workspace link sent by /web in Telegram.');}if(!response.ok){if(response.status===401){csrf=null;workspace=null;render();}throw Error(data.error||'Sift is unavailable. Please try again.');}return data;}
-function setBusy(value){pending=value;document.querySelectorAll('#report-actions button,#criteria-form button,#reply-form button').forEach(b=>b.disabled=value);}
-function dialog(title){$('#report-title').textContent=title;$('#report-content').replaceChildren();$('#report-actions').replaceChildren();$('#reply-form').hidden=true;if(!$('#report-dialog').open)$('#report-dialog').showModal();}
+function clearSession(){
+  authGeneration++;csrf=null;workspace=null;watchDraft={ca:'',drop:'',hours:''};connectionState='loading';
+  $('#criteria').value='';$('#reply').value='';$('#reply-form').hidden=true;
+  $('#report-dialog').close();$('#report-content').replaceChildren();$('#report-actions').replaceChildren();render();
+}
+async function api(path,body){
+  const generation=authGeneration;
+  const response=await fetch(`/api/${path}`,{method:body?'POST':'GET',credentials:'same-origin',cache:'no-store',headers:body?{'Content-Type':'application/json','X-Sift-CSRF':csrf||''}:{},...(body?{body:JSON.stringify(body)}:{signal:AbortSignal.timeout(15000)})});
+  let data;try{data=await response.json();}catch{throw Error('The web backend is not connected at this address. Open the workspace link sent by /web in Telegram.');}
+  if(!response.ok){if(response.status===401&&generation===authGeneration)clearSession();throw Error(data.error||'Sift is unavailable. Please try again.');}return data;
+}
+function setBusy(value){pending=value;$('#report-dialog').setAttribute('aria-busy',String(value));document.querySelectorAll('#report-actions button,#criteria-form button,#reply-form button').forEach(b=>b.disabled=value);}
+function dialog(title){dialogVersion++;$('#report-title').textContent=title;$('#report-content').replaceChildren();$('#report-actions').replaceChildren();$('#reply-form').hidden=true;if(!$('#report-dialog').open)$('#report-dialog').showModal();$('#report-dialog').scrollTop=0;}
 function accountOptions(content) {
   content.append(toolbar(...nav.filter(n=>['agent','performance','groups'].includes(n[0])).map(([key,label])=>button(label,()=>{$('#report-dialog').close();navigate(key);})))) ;
   if(!workspace)return;
@@ -35,14 +46,32 @@ function connect(){
   if(csrf){
     content.append(el('p',{class:'report-text'},`Signed in as ${workspace?.user?.name||'a private tester'}. Your web app and Telegram agent share the same rules and saved observations.`));
     accountOptions(content);
-    $('#report-actions').append(button('Sign out',async()=>{try{await api('logout',{});authGeneration++;csrf=null;workspace=null;$('#report-dialog').close();render();toast('Signed out. Your scans and rules are unchanged.');}catch(e){toast(e.message);}}));return;
+    $('#report-actions').append(button('Sign out',async()=>{try{await api('logout',{});clearSession();$('#report-dialog').close();toast('Signed out. Your scans and rules are unchanged.');}catch(e){toast(e.message);}}));return;
   }
   content.append(el('p',{class:'report-text'},'Open Sift in Telegram and send /web. Your bot will send a one-time link to this workspace, signed in to your account.\n\nOnly configured private testers can sign in. Keep that link private. If /web is unavailable, the operator needs to enable the web backend first.'));
   accountOptions(content);
   $('#report-actions').append(el('a',{class:'button yellow',href:'https://t.me/SiftAgentbot?start=web',target:'_blank',rel:'noopener noreferrer'},'Open Sift on Telegram →'));
 }
 function showReport(report,title){dialog(title);$('#report-content').append(el('div',{class:'report-text'},report.text));for(const b of report.buttons??[]){if(b.action)$('#report-actions').append(button(b.label,()=>runAction(b.action,title),'yellow'));else if(b.copy)$('#report-actions').append(button(b.label,()=>copyCA(b.copy)));else if(b.url&&b.url.startsWith('https://'))$('#report-actions').append(el('a',{class:'button outline',href:b.url,target:'_blank',rel:'noopener noreferrer'},b.label));}const draft=workspace?.agent?.draft;if(draft&&draft.step<6){$('#reply-form').hidden=false;$('#reply').value='';}if(report.notice)toast(report.notice);}
-async function execute(payload,title){if(!csrf){connect();return;}if(pending){toast('Please wait for the current check.');return;}dialog(title);$('#report-content').append(el('p',{class:'report-text'},'Checking with your agent…'));setBusy(true);const requestId=crypto.randomUUID();try{const report=await api('command',{...payload,requestId});await refresh();showReport(report,title);}catch(e){dialog('Request could not finish');$('#report-content').append(el('p',{class:'report-text'},e.message));$('#report-actions').append(button('Refresh saved state',async()=>{await refresh();$('#report-dialog').close();}));}finally{setBusy(false);}}
+async function execute(payload,title){
+  if(!csrf){connect();return;}if(pending){toast('Please wait for the current check.');return;}
+  dialog(title);const version=dialogVersion,identity=csrf;
+  $('#report-content').append(el('p',{class:'report-text'},'Checking with your agent…'));setBusy(true);
+  const visible=()=>$('#report-dialog').open&&dialogVersion===version;
+  try{
+    const report=await api('command',{...payload,requestId:crypto.randomUUID()});
+    if(csrf!==identity)return;
+    await refresh();
+    if(csrf!==identity){if(visible())connect();return;}
+    if(visible())showReport(report,title);
+    else toast('Request finished. Review the saved state for the result.');
+  }catch(e){
+    if(visible()){
+      dialog('Request could not finish');$('#report-content').append(el('p',{class:'report-text'},e.message));
+      $('#report-actions').append(csrf?button('Refresh saved state',async()=>{if(await refresh())$('#report-dialog').close();}):button('Get a new sign-in link',connect,'yellow'));
+    }else toast(e.message);
+  }finally{setBusy(false);}
+}
 const runCommand=(text,title='Agent review')=>execute({text},title);
 const runAction=(action,title)=>execute({action},title);
 async function copyCA(ca){try{await navigator.clipboard.writeText(ca);toast('CA copied');}catch{dialog('Copy contract address');const input=el('input',{value:ca,readonly:'', 'aria-label':'Contract address'});$('#report-content').append(input);input.focus();input.select();toast('Select and copy this address.');}}
@@ -53,21 +82,57 @@ function buildNav(){
   for(const key of ['discover','watchlist','alerts']){const [,label,glyph]=nav.find(n=>n[0]===key);$('#mobile-nav').append(el('a',{href:`#${key}`,class:'dock-item','data-view':key,onclick:e=>{e.preventDefault();navigate(key);}},el('span',{class:'dock-circle'},icon(glyph)),el('span',{},label)));}
   $('#mobile-nav').append(el('button',{class:'dock-item','data-account':'','aria-label':'Your account',onclick:connect},el('span',{class:'dock-circle'},icon('agent')),el('span',{},'Account')));
 }
-function render(){document.querySelectorAll('[data-view]').forEach(n=>{if(n.dataset.view===view)n.setAttribute('aria-current','page');else n.removeAttribute('aria-current');});$('#breadcrumb').textContent=nav.find(n=>n[0]===view)?.[1]||'Discover';$('#discover-view').hidden=view!=='discover';$('#detail-view').hidden=view==='discover';$('#connection-banner').hidden=Boolean(csrf);$('#connection').hidden=!csrf;$('#connection').classList.toggle('connected',Boolean(csrf));$('#connection').replaceChildren(el('i'),csrf?'Backend connected':'Not connected');$('#profile-name').textContent=workspace?.user?.name||'Your workspace';const name=workspace?.user?.name||'S';document.querySelectorAll('.avatar').forEach(n=>n.textContent=name[0].toUpperCase());
+function resultStatus(result){
+  const checks=result.checks??[],required=checks.filter(c=>c.mode==='require');
+  if(result.issue)return {label:'Source unavailable',tone:'neutral'};
+  if(required.some(c=>c.state==='fail'))return {label:'Rules not met',tone:'failed'};
+  if(result.unresolved||required.some(c=>c.state!=='pass'))return {label:'Needs evidence',tone:''};
+  if(result.matches===true&&required.length)return checks.some(c=>c.mode==='warn'&&c.state!=='pass')
+    ? {label:'Matched · warnings',tone:''}:{label:'Rules matched',tone:'passed'};
+  return {label:'Not qualified',tone:'neutral'};
+}
+function candidateReport(row){
+  dialog('Saved screening result');
+  const content=$('#report-content'),result=row.result,status=resultStatus(result);
+  content.append(el('span',{class:`badge ${status.tone}`},status.label),el('p',{class:'report-text'},`${row.token}\nChecked ${date(row.checked_at)} against your approved rules. This is a saved observation, not a fresh check or a safety verdict.`));
+  if(result.issue)content.append(el('p',{class:'report-text'},result.issue==='MARKET_UNAVAILABLE'?'The market source could not supply this check. Required rules were not verified.':`Source issue: ${result.issue}`));
+  for(const check of result.checks??[]){
+    const value=Number.isFinite(check.valueObserved)?(check.field==='poolAgeMinutes'?`${Number(check.valueObserved.toFixed(2))} minutes`:fmt(check.valueObserved,6)):null;
+    content.append(el('div',{class:'saved-check'},el('strong',{},`${check.state.toUpperCase()} · ${check.description||check.field}`),
+      el('p',{},value!==null?`Observed: ${value}`:check.state==='unknown'?'Evidence unavailable or incomplete.':'Saved evidence result.'),
+      check.mode==='warn'&&check.state!=='pass'?el('p',{},'Warning only; this does not block a match.'):null));
+  }
+  if(result.unresolved)content.append(el('p',{class:'report-text'},'Unresolved requirements prevented qualification.'));
+  if(workspace?.agent?.draft)content.append(el('p',{class:'report-text'},'Your unapproved draft was not used for this check.'));
+  $('#report-actions').append(button('Copy CA',()=>copyCA(row.token)),button('Check token now',()=>runCommand(`/check ${row.token}`,'Token evidence'),'yellow'));
+}
+function discoveryEmpty(){
+  if(!csrf)return empty('A place for your discoveries.','Connect your Telegram agent to see its saved checks. No sample coins are shown.');
+  if(!workspace)return empty('Loading your workspace.','Your saved rules and checks will appear when the connection is available.');
+  const {draft,approved}=workspace.agent;
+  if(!approved&&draft)return empty(draft.pendingRequirements?.length?'Your draft needs clarification.':'Your draft is waiting for review.',
+    'Review the saved draft before discovery can start. Your requirements stay in place.',commandButton('Review saved draft →','/agent','yellow'));
+  if(!approved)return empty('Your next discovery starts here.','Describe your criteria above, then review and approve them.');
+  const limited=approved.rules.some(r=>r.mode==='require'&&(r.field==='buyingCoordination'||r.field==='liquidityProtection'&&r.scope==='all'));
+  if(limited)return empty('Required evidence is unavailable.','Your saved policy needs complete coverage that Sift cannot currently establish. Unknown checks will continue to block qualifying alerts.',commandButton('Review coverage limits →','/why'));
+  return empty(workspace.scan.state==='active'?'Waiting for saved checks.':'Discovery is '+workspace.scan.state+'.',
+    'Completed checks will appear here. Use scan controls to review the current state.',commandButton('Review scan →','/scan'));
+}
+function render(){document.querySelectorAll('[data-view]').forEach(n=>{if(n.dataset.view===view)n.setAttribute('aria-current','page');else n.removeAttribute('aria-current');});$('#breadcrumb').textContent=nav.find(n=>n[0]===view)?.[1]||'Discover';$('#discover-view').hidden=view!=='discover';$('#detail-view').hidden=view==='discover';$('#connection-banner').hidden=Boolean(csrf);$('#connection').hidden=!csrf;$('#connection').classList.toggle('connected',Boolean(csrf)&&connectionState==='connected');$('#connection').replaceChildren(el('i'),connectionState==='connected'?'Backend connected':connectionState==='unavailable'?'Connection interrupted':'Loading workspace');$('#sync-notice').hidden=!csrf||connectionState!=='unavailable';$('#sync-notice p').textContent=workspace?`Connection interrupted. Showing data last loaded ${date(workspace.serverTime)}.`:'Connection interrupted. Your workspace could not be loaded.';$('#profile-name').textContent=workspace?.user?.name||'Your workspace';const name=workspace?.user?.name||'S';document.querySelectorAll('.avatar').forEach(n=>n.textContent=name[0].toUpperCase());
   const saved=workspace?.agent,current=saved?.draft??saved?.approved;$('#agent-name').textContent=current?.name||'Your Sift';$('#agent-status').textContent=saved?.draft?'Draft · review required':saved?.approved?`Scan ${workspace.scan.state}`:'Not configured';$('#mascot-caption').textContent=saved?.draft?'Awaiting your review.':workspace?.scan?.state==='active'?'Your agent is set to scout.':'A curious little companion.';
   $('#criteria-form button').firstChild.textContent=saved?.draft?'Review saved draft ':'Review criteria ';$('#criteria').disabled=Boolean(saved?.draft);$('#criteria').placeholder=saved?.draft?'Your saved draft is waiting. Review it before preparing a new strategy.':'Describe the coins you want to find. Include your market cap range, liquidity and risk requirements.';
   $('#last-cycle').textContent=workspace?.scan?.last_run?`Last cycle · ${date(workspace.scan.last_run)}`:csrf?'No cycle completed yet':'Connect to load your scan';const list=$('#candidates');list.replaceChildren();const checks=workspace?.candidateChecks??[];
-  if(!checks.length)list.append(empty(csrf?'Your next discovery starts here.':'A place for your discoveries.',csrf?'Review your criteria, then start discovery. Completed checks will appear here, including missing evidence.':'Connect your Telegram agent to see its saved checks. No sample coins are shown.'));
+  if(!checks.length)list.append(discoveryEmpty());
   else {
     list.append(el('div',{class:'column-head'},el('span',{},'Token'),el('span',{},'Market cap'),el('span',{},'Liquidity'),el('span',{class:'age-column'},'Pool age'),el('span',{},'Status'),el('span')));
     for(const row of checks.slice(0,8)){
       const checks=row.result.checks??[], observed=field=>checks.find(c=>c.field===field)?.valueObserved;
-      const age=observed('poolAgeMinutes');
+      const age=observed('poolAgeMinutes'),status=resultStatus(row.result);
       list.append(el('div',{class:'candidate-row observation-row'},el('div',{},el('strong',{},short(row.token)),el('small',{},date(row.checked_at))),
         el('span',{class:'metric'},el('span',{class:'metric-label'},'Cap '),fmt(observed('marketCap'))),
         el('span',{class:'metric'},el('span',{class:'metric-label'},'Liquidity '),fmt(observed('liquidityUsd'))),
         el('span',{class:'metric age-column'},Number.isFinite(age)?`${Math.round(age)}m`:'Unknown'),
-        el('span',{class:'badge',title:row.result.issue||'Saved screening result'},row.result.matches===true?'Rules matched':'Needs evidence'),
+        el('button',{class:`badge result-button ${status.tone}`,'aria-label':`${status.label}: review saved check for ${short(row.token)}`,onclick:()=>candidateReport(row)},status.label),
         el('button',{class:'copy',onclick:()=>copyCA(row.token)},icon('copy'),'Copy CA')));
     }
   }
@@ -75,7 +140,15 @@ function render(){document.querySelectorAll('[data-view]').forEach(n=>{if(n.data
 }
 function section(title,...children){return el('section',{class:'card detail-card'},el('h2',{},title),...children);}
 function toolbar(...buttons){return el('div',{class:'toolbar'},...buttons);}
-function renderDetail(){const meta={agent:['My agent','One set of rules. Shared with your Telegram agent.'],watchlist:['Your watchlist','Fixed-pool market monitors. Protection and developer activity are separate checks.'],alerts:['Your alerts','Saved reports and delivery attempts, including uncertain and failed sends.'],performance:['A clearer track record.','Paper observations with missing data kept visible. These are not actual trading returns.'],groups:['Your communities','Private configuration. Explicit admin approval before any group receives alerts.']}[view];$('#detail-heading').textContent=meta[0];$('#detail-subtitle').textContent=meta[1];const content=$('#detail-content');content.replaceChildren();
+function monitorCards(content){
+  content.replaceChildren();
+  if(!workspace.monitors.length)content.append(section('Your monitors',empty('Nothing on watch yet.','Add a contract address above to prepare a monitor.')));
+  for(const row of workspace.monitors)content.append(section(`Monitor #${row.id}`,el('div',{class:'split-title'},el('span',{class:'pill-state'},row.state),el('button',{class:'copy',onclick:()=>copyCA(row.token)},icon('copy'),'Copy CA')),el('p',{},`${short(row.token)} · ${row.config.dropPercent}% liquidity drop · ${row.config.hours} hours`),el('p',{},`Last attempt: ${date(row.last_check)}. Latest reported liquidity: ${fmt(row.observation?.selected?.liquidityUsd)}.`),row.issue?el('p',{},`Issue: ${row.issue}`):null,commandButton('Review controls →','/watchlist')));
+}
+function renderDetail(){const meta={agent:['My agent','One set of rules. Shared with your Telegram agent.'],watchlist:['Your watchlist','Fixed-pool market monitors. Protection and developer activity are separate checks.'],alerts:['Your alerts','Saved reports and delivery attempts, including uncertain and failed sends.'],performance:['A clearer track record.','Paper observations with missing data kept visible. These are not actual trading returns.'],groups:['Your communities','Private configuration. Explicit admin approval before any group receives alerts.']}[view];$('#detail-heading').textContent=meta[0];$('#detail-subtitle').textContent=meta[1];const content=$('#detail-content');
+  // Keep the form nodes, focus and cursor intact during background refreshes.
+  if(workspace&&view==='watchlist'&&$('#watch-form')){monitorCards($('#monitor-list'));return;}
+  content.replaceChildren();
   if(!workspace){content.append(section('Your private workspace',empty('Connect your agent first.','Your rules and saved data are loaded only after Telegram sign-in.',button('Connect Telegram →',connect,'yellow'))));return;}
   if(view==='agent'){
     const current=workspace.agent.draft??workspace.agent.approved;
@@ -83,10 +156,10 @@ function renderDetail(){const meta={agent:['My agent','One set of rules. Shared 
     content.append(section(current?.name||'Set up your agent',el('span',{class:'pill-state'},workspace.agent.draft?'Draft · review required':current?'Approved':'Not configured'),el('ul',{class:'rule-list'},workspace.ruleDescriptions.map(d=>el('li',{},d))),current?.pendingRequirements?.length?el('div',{class:'unresolved'},el('h3',{},'Instructions still need review'),...current.pendingRequirements.map(t=>el('p',{},t)),commandButton('Review supported mappings →','/mapextras')):null,el('p',{},workspace.coverage)));
     content.append(toolbar(commandButton('Guided setup','/setup'),button('Describe a strategy',()=>{navigate('discover');$('#criteria').focus();}),commandButton('Pause all activity','/pause'),commandButton('Resume discovery','/resume')));
   } else if(view==='watchlist'){
-    const form=el('form',{class:'form-grid',onsubmit:e=>{e.preventDefault();const data=new FormData(form);runCommand(`/watch ${data.get('ca')} ${data.get('drop')} ${data.get('hours')}`,'Review monitor');}},el('label',{},'Solana contract address',el('input',{name:'ca',required:'',maxlength:'44',placeholder:'Paste CA'})),el('label',{},'Liquidity drop (%)',el('input',{name:'drop',type:'number',required:'',min:'.1',max:'100',step:'.1',placeholder:'e.g. 20'})),el('label',{},'Hours to monitor',el('input',{name:'hours',type:'number',required:'',min:'1',max:'168',placeholder:'e.g. 24'})),el('button',{class:'button yellow'},'Review →'));
+    const field=attrs=>el('input',{...attrs,value:watchDraft[attrs.name],oninput:e=>{watchDraft[attrs.name]=e.target.value;}});
+    const form=el('form',{id:'watch-form',class:'form-grid',onsubmit:e=>{e.preventDefault();const data=new FormData(form);runCommand(`/watch ${data.get('ca')} ${data.get('drop')} ${data.get('hours')}`,'Review monitor');}},el('label',{},'Solana contract address',field({name:'ca',required:'',maxlength:'44',placeholder:'Paste CA'})),el('label',{},'Liquidity drop (%)',field({name:'drop',type:'number',required:'',min:'.1',max:'100',step:'.1',placeholder:'e.g. 20'})),el('label',{},'Hours to monitor',field({name:'hours',type:'number',required:'',min:'1',max:'168',placeholder:'e.g. 24'})),el('button',{class:'button yellow'},'Review →'));
     content.append(section('Follow a coin',el('p',{},'Choose your own threshold and duration. Review the baseline before starting.'),form),toolbar(commandButton('Monitor controls','/watchlist'),commandButton('Monitoring alerts','/watchalerts')));
-    if(!workspace.monitors.length)content.append(section('Your monitors',empty('Nothing on watch yet.','Add a contract address above to prepare a monitor.')));
-    for(const row of workspace.monitors)content.append(section(`Monitor #${row.id}`,el('div',{class:'split-title'},el('span',{class:'pill-state'},row.state),el('button',{class:'copy',onclick:()=>copyCA(row.token)},icon('copy'),'Copy CA')),el('p',{},`${short(row.token)} · ${row.config.dropPercent}% liquidity drop · ${row.config.hours} hours`),el('p',{},`Last attempt: ${date(row.last_check)}. Latest reported liquidity: ${fmt(row.observation?.selected?.liquidityUsd)}.`),row.issue?el('p',{},`Issue: ${row.issue}`):null,commandButton('Review controls →','/watchlist')));
+    const monitors=el('div',{id:'monitor-list'});content.append(monitors);monitorCards(monitors);
   } else if(view==='alerts'){
     content.append(toolbar(commandButton('Saved discovery reports','/alerts','yellow'),commandButton('Monitoring reports','/watchalerts'),commandButton('Older calls','/calls')));
     if(!workspace.calls.length)content.append(section('Delivery history',empty('No calls recorded yet.','A source connection is not a qualifying match. Reports appear after screening and a delivery attempt.')));
@@ -99,7 +172,11 @@ function renderDetail(){const meta={agent:['My agent','One set of rules. Shared 
     for(const group of workspace.groups)content.append(section(`Group ${group.chat_id}`,el('span',{class:'pill-state'},group.state),el('p',{},`Up to ${group.settings.max_per_cycle} alerts per cycle · Minimum ${group.settings.interval_minutes} minutes between attempts.`),toolbar(commandButton('Review & enable','/groups'),commandButton('Group strategy',`/groupstrategy ${group.chat_id}`),commandButton('Pause group',`/grouppause ${group.chat_id}`))));
   }
 }
-async function refresh(){if(!csrf)return;const identity=csrf;try{const data=await api('workspace');if(csrf!==identity)return;workspace=data;render();}catch(e){if(csrf===identity)toast(e.message);}}
+async function refresh(){
+  if(!csrf)return false;const identity=csrf,sequence=++refreshSequence;
+  try{const data=await api('workspace');if(csrf!==identity||sequence!==refreshSequence)return false;workspace=data;connectionState='connected';render();return true;}
+  catch(e){if(csrf===identity&&sequence===refreshSequence){connectionState='unavailable';render();}return false;}
+}
 function tokenCheck(){
   dialog('Take a closer look');
   const form=el('form',{onsubmit:e=>{e.preventDefault();const values=new FormData(form);runCommand(`/${values.get('kind')} ${values.get('ca')}`,'Token evidence');}},
@@ -115,14 +192,15 @@ $('#connect').addEventListener('click',connect);$('#account').addEventListener('
 $('#criteria-form').addEventListener('submit',e=>{e.preventDefault();if(workspace?.agent?.draft)return runCommand('/agent','Review saved draft');const text=$('#criteria').value.trim();if(!text){toast('Describe your criteria first.');$('#criteria').focus();return;}runCommand(`/describe ${text}`,'Review your criteria');});
 $('#reply-form').addEventListener('submit',e=>{e.preventDefault();const value=$('#reply').value.trim();if(value)runCommand(value,'Guided setup');});
 $('#refresh').addEventListener('click',()=>csrf?refresh():connect());
+$('#retry-sync').addEventListener('click',async()=>{const b=$('#retry-sync');b.disabled=true;try{await refresh();}finally{b.disabled=false;}});
 async function loadSession(code){
+  if(code){history.replaceState(null,'',location.pathname+'#discover');clearSession();navigate('discover');}
   const generation=++authGeneration;
-  if(code){history.replaceState(null,'',location.pathname+'#discover');csrf=null;workspace=null;navigate('discover');}
-  try{const session=await api(code?'login':'session',code?{code}:undefined);if(generation!==authGeneration)return;csrf=session.csrf;await refresh();if(code)toast('Connected to your Telegram agent.');}
+  try{const session=await api(code?'login':'session',code?{code}:undefined);if(generation!==authGeneration)return;csrf=session.csrf;const loaded=await refresh();if(code&&loaded)toast('Connected to your Telegram agent.');}
   catch(e){if(code){dialog('Sign-in needs attention');$('#report-content').append(el('p',{class:'report-text'},e.message));$('#report-actions').append(button('Get a new sign-in link',connect,'yellow'));}}
 }
 window.addEventListener('hashchange',()=>{const code=new URLSearchParams(location.hash.slice(1)).get('login');if(code)loadSession(code);else navigate(location.hash.slice(1));});
-document.addEventListener('visibilitychange',()=>{clearInterval(refreshTimer);if(!document.hidden){refresh();refreshTimer=setInterval(()=>{if(!pending)refresh();},30_000);}});
+document.addEventListener('visibilitychange',()=>{clearInterval(refreshTimer);if(!document.hidden){if(!pending)refresh();refreshTimer=setInterval(()=>{if(!pending)refresh();},30_000);}});
 buildNav();startMascot();
 const login=new URLSearchParams(location.hash.slice(1)).get('login');
 if(login)history.replaceState(null,'',location.pathname+'#discover');
