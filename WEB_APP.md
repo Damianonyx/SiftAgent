@@ -106,6 +106,7 @@ npm install --no-save --package-lock=false playwright@1.56.1
 npx playwright install chromium
 node scripts/verify-workspace-static.cjs
 SIFT_BOT_ROOT=../Sift-bot node scripts/verify-workspace.cjs
+SIFT_BOT_ROOT=../Sift-bot node scripts/verify-workspace-proxy.cjs
 ```
 
 The integration test uses the real web server, store, parser, approval controls,
@@ -114,6 +115,12 @@ adapters and an isolated in-memory database**. It checks sign-in (including an
 already-open tab), rules, separate activation, saved results, Copy CA, monitors,
 all views, sign-out, mobile layouts and reduced motion. It never sends Telegram
 messages or inspects a user's real database. Artifacts are gitignored.
+
+The proxy regression also requires OpenSSL. It uses disposable localhost TLS
+and the same isolated bot fixture to check browser sign-in, Secure/HttpOnly
+cookies, commands and logout when a tunnel rewrites both Host and Origin. A
+cross-origin browser login remains rejected even if its Origin is rewritten.
+The test certificate is deleted afterwards; no TLS checks are disabled in Sift.
 
 Live activation with the operator's bot token, public HTTPS routing and real
 testers has not been verified by these tests. No new positive risk-evidence
