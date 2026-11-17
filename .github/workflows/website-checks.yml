@@ -21,6 +21,7 @@ jobs:
           node --check dist/app.js
           node --check dist/app/workspace.js
           node --check dist/app/mascot.js
+          node --check dist/app/theme.js
       - name: Install browser test tooling
         run: |
           npm install --no-save --package-lock=false playwright@1.56.1

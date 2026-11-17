@@ -41,3 +41,13 @@ APIs, real Telegram messages or user database.
 
 Not validated: physical devices or non-Chromium engines. Synthetic integration
 tests do not establish live provider reliability or complete risk coverage.
+
+## Workspace redesign · 2026-11-17
+
+Verified in Chromium against the real bot web server (its strict CSP included)
+with synthetic data only: all existing workspace suites (static, integration,
+recovery, HTTPS proxy) plus the new features suite pass, and the public-site
+browser checks still pass. Layouts were reviewed at 320, 390 (iPhone 13), 820,
+1440px in light and dark themes, with no horizontal overflow or console errors.
+
+Not validated: physical devices, Safari/WebKit and Firefox engines, screen readers.
