@@ -229,7 +229,7 @@ function navigate(name,{focus=false}={}){
 function buildNav(){
   for(const [key,label,glyph,k] of nav)$('#desktop-nav').append(el('a',{href:`#${key}`,class:'nav-item','data-view':key,'aria-label':label,title:`${label} (G then ${k})`,onclick:e=>{e.preventDefault();navigate(key,{focus:true});}},icon(glyph),el('span',{},label),el('span',{class:'nav-count','data-count':key,hidden:true}),el('kbd',{class:'nav-key','aria-hidden':'true'},`G ${k}`)));
   const dock=$('#mobile-nav');
-  const item=key=>{const [,label,glyph]=nav.find(n=>n[0]===key);return el('a',{href:`#${key}`,class:'dock-item','data-view':key,onclick:e=>{e.preventDefault();navigate(key,{focus:true});}},el('span',{class:'dock-circle'},icon(glyph)),el('span',{},label),key==='alerts'?el('span',{class:'badge-dot','data-alert-dot':'',hidden:true}):null);};
+  const item=key=>{const [,label,glyph]=nav.find(n=>n[0]===key);return el('a',{href:`#${key}`,class:'dock-item','data-view':key,'aria-label':label,onclick:e=>{e.preventDefault();navigate(key,{focus:true});}},el('span',{class:'dock-circle'},icon(glyph)),el('span',{},label),key==='alerts'?el('span',{class:'badge-dot','data-alert-dot':'',hidden:true}):null);};
   dock.append(item('discover'),item('watchlist'),
     el('button',{class:'dock-item dock-fab',type:'button','aria-label':'Search and commands',onclick:openPalette},el('span',{class:'dock-circle'},icon('search'))),
     item('alerts'),
