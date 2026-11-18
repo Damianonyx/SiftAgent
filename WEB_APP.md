@@ -80,7 +80,7 @@ time instead of claiming the backend is connected. Closing a pending report does
 not cancel a submitted action; a late response cannot reopen it or replace a newer
 dialog. Review the saved state to confirm the outcome.
 
-The rabbit and city scene use the approved reference artwork directly (`reference-art.jpg`), with animated particles and actual account labels overlaid at runtime. The source image is unchanged; its example token rows are not used as app data.
+The workspace's agent card is minimal: the approved rabbit alone on a flat dark card, with a soft glow and a few drifting pixels. `rabbit.png` is cut directly from the approved artwork (`reference-art.jpg`) by `scripts/make-rabbit-cutout.py`, which keeps the rabbit's own pixels and removes the city, moon, rings and particles; the character is not redrawn. The public website keeps the full city scene from the same source image, cover-cropped so it is never stretched. The source image is unchanged; its example token rows are not used as app data.
 
 The pixel rabbit animation is decorative. Its motion is independent of market
 activity. It supports pointer interaction, pause and reduced motion.
