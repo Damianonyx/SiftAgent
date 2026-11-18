@@ -1,7 +1,5 @@
 // Render the approved artwork directly; its character is never redrawn.
 // Motion is decorative and independent of provider activity.
-// A card with data-mascot="minimal" shows only the rabbit, cut out of the same
-// artwork (rabbit.png, see scripts/make-rabbit-cutout.py), on a flat background.
 export function startMascot() {
   const canvas = document.querySelector('#mascot-canvas');
   const card = canvas.parentElement, button = document.querySelector('#motion');
@@ -9,8 +7,7 @@ export function startMascot() {
   if (!context) { button.hidden = true; return; }
   const reduced = matchMedia('(prefers-reduced-motion: reduce)');
   let paused = reduced.matches, visible = true, width = 0, height = 0;
-  let frame = 0, pointer = null, animation, inset = { top: 0, bottom: 0 };
-  const minimal = card.dataset.mascot === 'minimal';
+  let frame = 0, pointer = null, animation;
   const source = new Image();
   const sync = () => {
     button.setAttribute('aria-pressed', String(paused));
@@ -19,43 +16,11 @@ export function startMascot() {
       ? '<svg class="icon" viewBox="0 0 24 24"><path d="m9 5 11 7-11 7Z"/></svg>'
       : '<svg class="icon" viewBox="0 0 24 24"><path d="M9 5v14M15 5v14"/></svg>';
   };
-  const drawMinimal = () => {
-    // Centre the rabbit in the space left under any overlapping header.
-    const top = inset.top, area = height - top - inset.bottom;
-    const scale = Math.min(area * .66 / source.naturalHeight, width * .5 / source.naturalWidth);
-    const w = source.naturalWidth * scale, h = source.naturalHeight * scale;
-    const x = Math.round((width - w) / 2), y = Math.round(top + (area - h) / 2 + area * .03);
-    const glow = context.createRadialGradient(width / 2, y + h * .55, 0, width / 2, y + h * .55, h * .75);
-    glow.addColorStop(0, 'rgba(253,223,4,.13)'); glow.addColorStop(1, 'rgba(253,223,4,0)');
-    context.fillStyle = glow; context.fillRect(0, 0, width, height);
-    context.fillStyle = 'rgba(253,223,4,.14)';
-    context.fillRect(Math.round(width / 2 - w * .55), y + h + 3, Math.round(w * 1.1), 1);
-    context.imageSmoothingQuality = 'high';
-    context.drawImage(source, x, y, w, h);
-    // A few quiet pixels rising around the rabbit.
-    const t = frame * .012;
-    for (let i = 0; i < 6; i++) {
-      const lane = (i * .618) % 1, speed = .05 + (i % 3) * .018;
-      const p = paused ? lane : (lane + t * speed) % 1;
-      let px = width / 2 + (lane - .5) * w * 2.4 + Math.sin(t + i) * 4;
-      let py = y + h - p * h * 1.15;
-      if (pointer && !paused) {
-        const d = Math.hypot(px - pointer.x, py - pointer.y);
-        if (d < 50) { px += (px - pointer.x) * .4; py += (py - pointer.y) * .4; }
-      }
-      const size = i % 3 === 0 ? 4 : 3;
-      context.globalAlpha = Math.sin(p * Math.PI) * .75;
-      context.fillStyle = '#fddf04';
-      context.fillRect(Math.round(px), Math.round(py), size, size);
-    }
-    context.globalAlpha = 1;
-  };
   const draw = () => {
     if (!width || !height || !source.complete || !source.naturalWidth) return;
     const ratio = Math.min(devicePixelRatio || 1, 2);
     context.setTransform(ratio, 0, 0, ratio, 0, 0);
     context.clearRect(0, 0, width, height);
-    if (minimal) { drawMinimal(); return; }
     // The source file is the unchanged approved design image. Only its
     // scene is rendered; DOM overlays replace example labels with agent state.
     // Cover-fit inside the approved scene region (never beyond it), so the
@@ -107,13 +72,11 @@ export function startMascot() {
   };
   source.onload = () => { card.classList.add('ready'); button.hidden = false; draw(); };
   source.onerror = () => { button.hidden = true; };
-  source.src = new URL(minimal ? './rabbit.png' : './reference-art.jpg', import.meta.url).href;
+  // A card may name a recoloured copy of the same artwork (same size and layout),
+  // e.g. the workspace's brand-yellow scene; the website uses the original.
+  source.src = new URL(`./${card.dataset.art || 'reference-art.jpg'}`, import.meta.url).href;
   new ResizeObserver(() => {
     width = canvas.clientWidth || card.clientWidth; height = canvas.clientHeight || card.clientHeight;
-    if (minimal) {
-      const c = canvas.getBoundingClientRect(), head = card.querySelector('.mascot-heading')?.getBoundingClientRect();
-      inset = { top: head ? Math.max(0, head.bottom - c.top) : 0, bottom: 0 };
-    }
     const ratio = Math.min(devicePixelRatio || 1, 2);
     canvas.width = width * ratio; canvas.height = height * ratio; draw();
   }).observe(card);
