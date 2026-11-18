@@ -72,7 +72,7 @@ Configuration reference: [Vercel static configuration](https://vercel.com/docs/p
 - `dist/app/mascot.js`: the shared approved artwork and particle animation.
 - `dist/app/workspace.js`, `workspace.css`, `theme.js`: the web workspace (see WEB_APP.md).
 - `dist/app/fonts/`: local DM Sans, JetBrains Mono and Sift pixel fonts (OFL).
-- `dist/app/rabbit.png`: the approved rabbit cut out of its scene for the minimal agent card (`scripts/make-rabbit-cutout.py`).
+- `dist/app/rabbit.png`, `brand-rabbit.png`: the approved rabbits cut out of the artwork in the brand yellow (`scripts/make-rabbit-cutout.py`).
 - `dist/assets/`: supplied brand images and local font.
 - `scripts/package-preview.py`: optional offline HTML and source ZIP packaging.
 - `vercel.json`: static deployment configuration.
