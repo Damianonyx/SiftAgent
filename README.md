@@ -70,12 +70,15 @@ Configuration reference: [Vercel static configuration](https://vercel.com/docs/p
 - `dist/hero.css`: editorial hero and interactive simulation panel.
 - `dist/app.js`: navigation and shared mascot initialization.
 - `dist/app/mascot.js`: the shared approved artwork and particle animation.
+- `dist/app/workspace.js`, `workspace.css`, `theme.js`: the web workspace (see WEB_APP.md).
+- `dist/app/fonts/`: local DM Sans, JetBrains Mono and Sift pixel fonts (OFL).
 - `dist/assets/`: supplied brand images and local font.
 - `scripts/package-preview.py`: optional offline HTML and source ZIP packaging.
 - `vercel.json`: static deployment configuration.
 - `scripts/verify-browser.cjs`: real Chromium layout and interaction checks.
 - `.github/workflows/website-checks.yml`: browser checks and screenshot artifacts.
 - `scripts/verify-deployment.cjs`: confirms the production URL serves the current files.
+- `scripts/verify-workspace-features.cjs`, `workspace-seed.mjs`, `dev-workspace.mjs`: workspace feature checks and a synthetic local harness.
 
 The website has no API keys, wallet connection or live token-data requests.
 Animation supports reduced-motion preferences and pause controls.

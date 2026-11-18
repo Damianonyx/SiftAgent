@@ -16,6 +16,44 @@ services introduced here.
 - Account menu: sign-out and quick navigation, with follow-ups and UTC quiet
   hours inside a closed notification-preferences disclosure. There is no settings page.
 
+## Interface
+
+- **Discover dashboard.** A summary row derived only from saved data: discovery
+  state and last cycle, saved-check outcomes as a stacked bar, live monitors and
+  the 1h paper win rate with a per-horizon sparkline. Before rules are approved,
+  the row becomes a four-step guide (connect, describe, approve, start), each a
+  shortcut to the real action. Saved checks are sortable (token age, market cap,
+  liquidity, pool age, status), show per-rule pass/fail/unknown pips, and expand
+  beyond the first eight on request. Unknown values are shown as a dash, never zero.
+- **My agent.** Rule cards (required or warning, with thresholds), unresolved
+  instructions, coverage limits, discovery health and controls.
+- **Watchlist.** Address validation, clipboard paste, threshold and duration
+  presets, and monitor cards with baseline vs latest liquidity, a drop gauge
+  against the threshold, and window progress.
+- **Alerts.** One day-grouped timeline of calls (with paper outcomes per
+  horizon) and monitoring reports.
+- **Performance.** Mean paper net by horizon, horizon coverage (observed, missed,
+  unavailable, pending) and a per-call outcome matrix. Only confirmed sends are
+  counted; missing horizons stay visible and are never treated as zero. The bot's
+  full methodology text is kept beneath the charts.
+- **Command menu** (`⌘K`/`Ctrl K` or `/`, and the centre dock button on phones):
+  views, agent commands and saved checks. Pasting a contract address offers a
+  market snapshot, risk evidence, a prefilled monitor or copy.
+- **Keyboard shortcuts:** `G` then `D/A/W/L/P/G` for views, `C` check a token,
+  `N` new criteria, `R` refresh, `T` theme, `?` for the list, `⌘/Ctrl ↵` to review.
+- **Light and dark themes** follow the system by default; a choice in the
+  account dialog or the top bar is kept in this browser only (`localStorage`,
+  theme preference only, never account data).
+- **Phones** get a floating dock, bottom-sheet dialogs, a swipeable summary row,
+  safe-area insets and 16px inputs (no iOS zoom). Tablets use a compact icon rail.
+- Contract addresses use a deterministic pixel identicon (decorative) and the
+  saved-check dialog links to Solscan and DexScreener. The app makes no requests
+  to those sites.
+
+Fonts are local: DM Sans (400–700) and JetBrains Mono for figures and addresses
+(both SIL OFL, licences in `fonts/`). Everything still works under the bot's
+`default-src 'self'` Content Security Policy: no inline scripts or style attributes.
+
 The main screen has no filter strip or mode switch. Token checks start with a
 market snapshot; additional evidence types are tucked inside a disclosure. Saved
 screening rules and notification preferences are never replaced with UI defaults.
@@ -124,6 +162,7 @@ npm install --no-save --package-lock=false playwright@1.56.1
 npx playwright install chromium
 node scripts/verify-workspace-static.cjs
 SIFT_BOT_ROOT=../Sift-bot node scripts/verify-workspace.cjs
+SIFT_BOT_ROOT=../Sift-bot node scripts/verify-workspace-features.cjs
 SIFT_BOT_ROOT=../Sift-bot node scripts/verify-workspace-proxy.cjs
 SIFT_BOT_ROOT=../Sift-bot node scripts/verify-workspace-recovery.cjs
 ```
@@ -146,6 +185,15 @@ mapping and approval, incomplete evidence blocking delivery, saved-result detail
 refresh while typing, a simulated connection outage, delayed report responses,
 session revocation and isolation of unsaved inputs between accounts. All data and
 deliveries remain synthetic and local to the test runtime.
+
+The features regression seeds the same isolated fixture with synthetic rules,
+saved checks, calls, outcomes, monitors and a group (`scripts/workspace-seed.mjs`)
+and checks the summary row, sorting, Copy CA feedback, the command menu, contract
+actions, monitor presets, keyboard navigation, charts, the alerts timeline, theme
+persistence, the phone dock and bottom-sheet dialogs, with no console errors.
+
+For design work, `SIFT_BOT_ROOT=../Sift-bot node scripts/dev-workspace.mjs 4300`
+runs the real web server with that synthetic data and prints one-use sign-in links.
 
 Live activation with the operator's bot token, public HTTPS routing and real
 testers has not been verified by these tests. No new positive risk-evidence

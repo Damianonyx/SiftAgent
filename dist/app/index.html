@@ -2,12 +2,16 @@
 <html lang="en">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
-  <meta name="theme-color" content="#fddf04">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#f6f5f0" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#0c0c0b" media="(prefers-color-scheme: dark)">
+  <meta name="color-scheme" content="light dark">
   <meta name="application-name" content="Sift">
   <meta name="apple-mobile-web-app-title" content="Sift">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="format-detection" content="telephone=no">
   <meta name="description" content="Your private Sift workspace. Review criteria, scout Solana coins and follow evidence alongside your Telegram agent.">
   <meta property="og:title" content="Sift | find coins that match your rules.">
   <meta property="og:description" content="Your private Sift workspace. Review criteria, scout Solana coins and follow evidence alongside your Telegram agent.">
@@ -31,44 +35,87 @@
   <link rel="icon" href="icons/sift-32.png" type="image/png" sizes="32x32">
   <link rel="icon" href="icons/sift-192.png" type="image/png" sizes="192x192">
   <link rel="apple-touch-icon" href="icons/sift-180.png" sizes="180x180">
+  <link rel="preload" href="fonts/dm-sans.woff" as="font" type="font/woff" crossorigin>
+  <link rel="preload" href="fonts/dm-sans-600.woff" as="font" type="font/woff" crossorigin>
   <link rel="stylesheet" href="workspace.css">
+  <script src="theme.js"></script>
   <script type="module" src="workspace.js"></script>
 </head>
 <body>
   <a href="#main" class="skip">Skip to workspace</a>
-  <aside class="sidebar">
-    <a class="brand" href="#discover" aria-label="Sift Discover"><span class="brand-rabbit" aria-hidden="true"></span><strong>SIFT</strong></a>
-    
+  <aside class="sidebar" aria-label="Sidebar">
+    <a class="brand" href="#discover" aria-label="Sift Discover"><span class="brand-rabbit" aria-hidden="true"></span><strong>SIFT</strong><span class="brand-tag">Beta</span></a>
+    <button class="search-trigger" id="palette-trigger" type="button" aria-label="Open command menu" aria-keyshortcuts="Control+K Meta+K"><span data-icon="search"></span><span class="search-trigger-label">Search or jump to…</span><kbd class="kbd" data-mod-key>⌘K</kbd></button>
+    <p class="nav-label">Workspace</p>
     <nav id="desktop-nav" aria-label="Workspace"></nav>
-    <div class="sidebar-bottom"><a class="docs-link" href="https://siftagent.gitbook.io/sift/" target="_blank" rel="noopener noreferrer"><span data-icon="book"></span>Documentation<span class="external">→</span></a>
-    <button id="profile" class="profile"><span class="avatar">S</span><span id="profile-name">Your workspace</span><span>⌄</span></button></div>
+    <div class="sidebar-agent" id="sidebar-agent" hidden><span class="pulse-dot" id="sidebar-dot"></span><div><small>Your agent</small><strong id="sidebar-agent-name">Your Sift</strong><span id="sidebar-agent-state">Not configured</span></div></div>
+    <div class="sidebar-bottom">
+      <a class="side-link" href="https://t.me/SiftAgentbot" target="_blank" rel="noopener noreferrer"><span data-icon="send"></span>Open in Telegram<span class="external" data-icon="external"></span></a>
+      <a class="side-link docs-link" href="https://siftagent.gitbook.io/sift/" target="_blank" rel="noopener noreferrer"><span data-icon="book"></span>Documentation<span class="external" data-icon="external"></span></a>
+      <button id="profile" class="profile" type="button"><span class="avatar" aria-hidden="true">S</span><span class="profile-text"><span id="profile-name">Your workspace</span><small id="profile-sub">Not signed in</small></span><span data-icon="chevrons"></span></button>
+    </div>
   </aside>
   <div class="shell">
-    <header class="topbar"><div class="breadcrumb"><span>Workspace</span><span>/</span><strong id="breadcrumb">Discover</strong></div><a class="mobile-brand brand" href="#discover"><span class="brand-rabbit" aria-hidden="true"></span><strong>SIFT</strong></a>
-      <div class="top-actions"><div id="connection-banner"><button class="connection" id="connect">Connect Telegram</button></div><span id="connection" class="connection" hidden><i></i>Backend connected</span><button class="icon-button" id="search-button" aria-label="Check a token" data-icon="search"></button><button class="icon-button" id="notifications" aria-label="Saved alerts" data-icon="alerts"></button><button class="avatar" id="account" aria-label="Account and sign-in">S</button></div></header>
+    <header class="topbar">
+      <a class="mobile-brand brand" href="#discover" aria-label="Sift Discover"><span class="brand-rabbit" aria-hidden="true"></span><strong>SIFT</strong></a>
+      <div class="breadcrumb"><span>Workspace</span><span class="crumb-sep" aria-hidden="true">/</span><strong id="breadcrumb">Discover</strong></div>
+      <div class="top-actions">
+        <div id="connection-banner"><button class="connection connect-cta" id="connect" type="button"><span data-icon="send"></span>Connect Telegram</button></div>
+        <span id="connection" class="connection" role="status" hidden><i></i>Backend connected</span>
+        <button class="icon-button" id="search-button" type="button" aria-label="Check a token" title="Check a token" data-icon="search"></button>
+        <button class="icon-button" id="theme-toggle" type="button" aria-label="Switch colour theme" title="Theme" data-icon="moon"></button>
+        <button class="icon-button" id="notifications" type="button" aria-label="Saved alerts" title="Alerts" data-icon="alerts"><span class="badge-dot" id="alert-dot" hidden></span></button>
+        <button class="avatar avatar-button" id="account" type="button" aria-label="Account and sign-in">S</button>
+      </div>
+    </header>
     <main id="main" tabindex="-1">
-      <div id="sync-notice" class="sync-notice" role="status" hidden><p>Connection interrupted. Showing previously loaded data.</p><button class="button outline" id="retry-sync">Retry connection</button></div>
+      <div id="sync-notice" class="sync-notice" role="status" hidden><span data-icon="alert"></span><p>Connection interrupted. Showing previously loaded data.</p><button class="button outline small" id="retry-sync" type="button">Retry connection</button></div>
       <section id="discover-view" aria-labelledby="hero-heading">
-        <div class="hero-heading"><h1 id="hero-heading"><span class="desktop-greeting">Your criteria. <span class="highlight">Your signal.</span></span><span class="mobile-greeting">Your signal<br><span class="highlight">starts here.</span></span></h1><p>Sift through the noise. Find your signal.</p><div class="skyline skyline-light" aria-hidden="true"></div></div>
+        <div class="page-intro">
+          <div>
+            <p class="eyebrow" id="today"></p>
+            <h1 id="hero-heading"><span class="desktop-greeting">Your criteria. <span class="highlight">Your signal.</span></span><span class="mobile-greeting">Your signal<br><span class="highlight">starts here.</span></span></h1>
+            <p class="intro-sub" id="hero-sub">Sift through the noise. Find your signal.</p>
+          </div>
+          <div class="skyline" aria-hidden="true"></div>
+        </div>
+        <div class="kpi-row" id="kpis" aria-label="Workspace summary"></div>
         <div class="workspace-grid">
-          <section class="prompt-card card"><div class="section-title"><h2><span class="desktop-prompt-title">What are we looking for?</span><span class="mobile-prompt-title">Describe your criteria</span></h2><span data-icon="sparkles"></span></div>
-            <form id="criteria-form"><label class="sr-only" for="criteria">Describe your screening criteria</label><textarea id="criteria" maxlength="800" rows="3" placeholder="Describe the coins you want to find. Include your market cap range, liquidity and risk requirements."></textarea>
-            <div class="prompt-footer"><p><span data-icon="info"></span>Review required before scanning.</p><button class="button yellow" type="submit">Review criteria <span>→</span></button></div></form>
+          <section class="prompt-card card" aria-labelledby="prompt-heading">
+            <div class="section-title"><h2 id="prompt-heading"><span class="desktop-prompt-title">What are we looking for?</span><span class="mobile-prompt-title">Describe your criteria</span></h2><span class="ai-chip"><span data-icon="sparkles"></span>Plain English</span></div>
+            <form id="criteria-form">
+              <label class="sr-only" for="criteria">Describe your screening criteria</label>
+              <div class="composer">
+                <textarea id="criteria" maxlength="800" rows="4" aria-describedby="criteria-hint criteria-count" placeholder="Describe the coins you want to find. Include your market cap range, liquidity and risk requirements."></textarea>
+                <div class="composer-meta"><span id="criteria-hint"><kbd class="kbd" data-mod-key>⌘</kbd><kbd class="kbd">↵</kbd> to review</span><span id="criteria-count" class="count" aria-live="polite">0 / 800</span></div>
+              </div>
+              <div class="prompt-footer"><p><span data-icon="shield"></span>Review required before scanning. Nothing runs until you approve.</p><button class="button yellow" type="submit">Review criteria <span class="btn-arrow" aria-hidden="true">→</span></button></div>
+            </form>
           </section>
-          <section class="mascot-card" aria-label="Your agent mascot simulation"><div class="mascot-heading"><div><p class="eyebrow">YOUR AGENT</p><h2 id="agent-name">Your Sift</h2><span class="agent-status" id="agent-status">Not connected</span></div><button id="motion" class="motion icon-button" aria-label="Pause mascot animation" aria-pressed="false" data-icon="pause"></button></div>
-            <div id="mascot-fallback" class="scene-fallback" role="img" aria-label="The approved yellow pixel rabbit in its city scene"></div><canvas id="mascot-canvas" aria-hidden="true"></canvas><p class="mascot-caption" id="mascot-caption">A curious little companion.</p><span class="simulation-label">VISUAL SIMULATION</span>
+          <section class="mascot-card" aria-label="Your agent mascot simulation">
+            <div class="mascot-heading"><div><p class="eyebrow">YOUR AGENT</p><h2 id="agent-name">Your Sift</h2><span class="agent-status" id="agent-status">Not connected</span></div><button id="motion" class="motion icon-button" type="button" aria-label="Pause mascot animation" aria-pressed="false" data-icon="pause"></button></div>
+            <div id="mascot-fallback" class="scene-fallback" role="img" aria-label="The approved yellow pixel rabbit in its city scene"></div><canvas id="mascot-canvas" aria-hidden="true"></canvas>
+            <div class="mascot-foot"><p class="mascot-caption" id="mascot-caption">A curious little companion.</p><span class="simulation-label">VISUAL SIMULATION</span></div>
           </section>
         </div>
-        <section class="card candidates-card"><div class="section-title"><div><h2>Candidate preview <span class="small-tag">Saved checks</span></h2></div><div class="candidate-controls"><button class="icon-button" id="refresh" aria-label="Refresh saved results" data-icon="refresh"></button><button class="text-button" data-command="/scan">Scan controls <span>→</span></button></div></div><div id="candidates"></div><footer class="card-footer"><span id="last-cycle">No scan data loaded</span><button class="text-button" data-command="/why">Why no matches? →</button></footer></section>
-        <div class="workspace-note"><span data-icon="shield"></span><p>Evidence before confidence. Unknown required checks never count as a pass.</p><button class="text-button" data-command="/sources">Source status →</button></div>
+        <section class="card candidates-card" aria-labelledby="candidates-heading">
+          <div class="section-title">
+            <div class="title-group"><h2 id="candidates-heading">Candidate preview</h2><span class="small-tag" id="candidate-count">Saved checks</span></div>
+            <div class="candidate-controls"><button class="icon-button" id="refresh" type="button" aria-label="Refresh saved results" title="Refresh (R)" data-icon="refresh"></button><button class="button outline small" type="button" data-command="/scan">Scan controls <span aria-hidden="true">→</span></button></div>
+          </div>
+          <div id="candidates"></div>
+          <footer class="card-footer"><span id="last-cycle">No scan data loaded</span><button class="text-button" type="button" data-command="/why">Why no matches? →</button></footer>
+        </section>
+        <div class="workspace-note"><span data-icon="shield"></span><p>Evidence before confidence. Unknown required checks never count as a pass.</p><button class="text-button" type="button" data-command="/sources">Source status →</button></div>
       </section>
-      <section id="detail-view" hidden aria-labelledby="detail-heading"><div class="page-heading"><p class="eyebrow">YOUR SIFT WORKSPACE</p><h1 id="detail-heading"></h1><p id="detail-subtitle"></p></div><div id="detail-content"></div></section>
+      <section id="detail-view" hidden aria-labelledby="detail-heading"><div class="page-heading"><p class="eyebrow" id="detail-eyebrow">YOUR SIFT WORKSPACE</p><h1 id="detail-heading"></h1><p id="detail-subtitle"></p></div><div id="detail-content"></div></section>
     </main>
-    <footer class="page-footer"><span>SIFT AGENT <b>·</b> PRIVATE TESTING</span><span>No wallet connection. Your criteria always.</span></footer>
+    <footer class="page-footer"><span class="pixel">SIFT AGENT <b>·</b> PRIVATE TESTING</span><span>No wallet connection. No custody. No trade execution.</span><button class="text-button" type="button" id="shortcuts-link">Keyboard shortcuts <kbd class="kbd">?</kbd></button></footer>
   </div>
   <nav class="mobile-dock" id="mobile-nav" aria-label="Mobile workspace"></nav>
-  <dialog id="report-dialog" aria-labelledby="report-title"><div class="dialog-header"><div><p class="eyebrow">SIFT WORKSPACE</p><h2 id="report-title">Agent review</h2></div><button class="icon-button" id="close-report" aria-label="Close dialog" data-icon="close"></button></div><div id="report-content"></div><div id="report-actions" class="dialog-actions"></div><form id="reply-form" hidden><label for="reply">Your answer</label><div class="inline-form"><input id="reply" maxlength="800" autocomplete="off" placeholder="Enter your answer"><button class="button yellow">Continue →</button></div></form></dialog>
-  <div id="toast" role="status" aria-live="polite" hidden></div>
+  <dialog id="report-dialog" aria-labelledby="report-title"><span class="sheet-handle" aria-hidden="true"></span><div class="dialog-header"><div><p class="eyebrow">SIFT WORKSPACE</p><h2 id="report-title">Agent review</h2></div><button class="icon-button" id="close-report" type="button" aria-label="Close dialog" data-icon="close"></button></div><div id="report-content"></div><div id="report-actions" class="dialog-actions"></div><form id="reply-form" hidden><label for="reply">Your answer</label><div class="inline-form"><input id="reply" maxlength="800" autocomplete="off" placeholder="Enter your answer"><button class="button yellow">Continue →</button></div></form></dialog>
+  <dialog id="palette" class="palette" aria-label="Command menu"><div class="palette-search"><span data-icon="search"></span><input id="palette-input" name="palette" type="text" role="combobox" aria-expanded="true" aria-controls="palette-list" aria-autocomplete="list" autocomplete="off" spellcheck="false" placeholder="Search views and actions, or paste a contract address"><kbd class="kbd">esc</kbd></div><div id="palette-list" role="listbox" aria-label="Commands"></div><div class="palette-foot"><span><kbd class="kbd">↑</kbd><kbd class="kbd">↓</kbd> navigate</span><span><kbd class="kbd">↵</kbd> select</span><span class="grow"></span><span class="pixel">SIFT</span></div></dialog>
+  <div id="toast" class="toast-region" role="status" aria-live="polite"></div>
   <noscript><div class="noscript">JavaScript is required for this private workspace. You can still use <a href="https://t.me/SiftAgentbot">Sift on Telegram</a>.</div></noscript>
 </body>
 </html>
