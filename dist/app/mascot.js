@@ -72,7 +72,11 @@ export function startMascot() {
   };
   source.onload = () => { card.classList.add('ready'); button.hidden = false; draw(); };
   source.onerror = () => { button.hidden = true; };
-  source.src = new URL('./reference-art.jpg', import.meta.url).href;
+  // A card may name a recoloured copy of the same artwork (same size and layout),
+  // e.g. the workspace's brand-yellow scene; the website uses the original.
+  // (The original-artwork expression stays literal: scripts/package-preview.py inlines it.)
+  const original = new URL('./reference-art.jpg', import.meta.url).href;
+  source.src = card.dataset.art ? new URL(card.dataset.art, original).href : original;
   new ResizeObserver(() => {
     width = canvas.clientWidth || card.clientWidth; height = canvas.clientHeight || card.clientHeight;
     const ratio = Math.min(devicePixelRatio || 1, 2);

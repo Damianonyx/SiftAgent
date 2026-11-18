@@ -626,7 +626,7 @@ function paletteCommands(query){
   if(isAddress(q)){
     out.push({group:'Token',label:`Check market snapshot · ${short(q)}`,glyph:'search',run:()=>csrf?runCommand(`/check ${q}`,'Token evidence'):connect(),always:true});
     out.push({group:'Token',label:`Request risk evidence · ${short(q)}`,glyph:'shield',run:()=>csrf?runCommand(`/risk ${q}`,'Token evidence'):connect(),always:true});
-    out.push({group:'Token',label:`Monitor liquidity · ${short(q)}`,glyph:'watch',run:()=>{watchDraft.ca=q;navigate('watchlist');setTimeout(()=>$('#watch-form [name=drop]')?.focus(),60);},always:true});
+    out.push({group:'Token',label:`Monitor liquidity · ${short(q)}`,glyph:'watch',run:()=>{watchDraft.ca=q;navigate('watchlist');const input=$('#watch-form [name=ca]');if(input){input.value=q;syncPresets();}setTimeout(()=>$('#watch-form [name=drop]')?.focus(),60);},always:true});
     out.push({group:'Token',label:`Copy address · ${short(q)}`,glyph:'copy',run:()=>copyCA(q),always:true});
   }
   for(const [key,label,glyph,k] of nav)out.push({group:'Go to',label,glyph,hint:`G ${k}`,run:()=>navigate(key,{focus:true})});

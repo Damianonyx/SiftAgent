@@ -58,6 +58,11 @@ const {chromium,devices}=require('playwright');
     assert.equal(await page.locator('#watch-form [name=ca]').inputValue(),CA);
     await page.getByRole('button',{name:'24h'}).click();assert.equal(await page.locator('#watch-form [name=hours]').inputValue(),'24');
     assert.match(await page.locator('#ca-help').textContent(),/valid Solana address/);
+    // Choosing a different contract while the Watchlist is already open updates the form itself.
+    const other='So11111111111111111111111111111111111111112';
+    await page.keyboard.press('Control+k');await page.keyboard.type(other);
+    await page.locator('.palette-item',{hasText:'Monitor liquidity'}).click();
+    assert.equal(await page.locator('#watch-form [name=ca]').inputValue(),other);
     console.log('PASS command palette navigation, filtering, contract actions and monitor presets');
 
     // Keyboard navigation and shortcuts dialog.

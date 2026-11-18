@@ -80,7 +80,7 @@ time instead of claiming the backend is connected. Closing a pending report does
 not cancel a submitted action; a late response cannot reopen it or replace a newer
 dialog. Review the saved state to confirm the outcome.
 
-The rabbit and city scene use the approved reference artwork directly (`reference-art.jpg`), with animated particles and actual account labels overlaid at runtime. The source image is unchanged; its example token rows are not used as app data.
+The workspace's agent card shows the rabbit in its city scene from the approved artwork, with animated particles and the agent's real name and status overlaid at runtime. It uses `scene-brand.jpg`, a copy of `reference-art.jpg` made by `scripts/make-brand-art.py` that moves the artwork's bright yellows (rabbit, particles) to the brand yellow (#fddf04), leaving the dimmer moon and glow muted, keeping brightness, layout and everything else, so it matches the rest of the interface. The same script makes `brand-rabbit.png`, the header logo on a transparent background in the brand yellow, so it sits cleanly in light and dark themes. The scene is cover-cropped so it is never stretched; nothing is redrawn. The public website keeps the original `reference-art.jpg`, which is unchanged; its example token rows are not used as app data.
 
 The pixel rabbit animation is decorative. Its motion is independent of market
 activity. It supports pointer interaction, pause and reduced motion.

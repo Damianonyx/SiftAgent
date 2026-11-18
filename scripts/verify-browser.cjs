@@ -49,7 +49,9 @@ const server = http.createServer(async (req,res) => {
     await page.setViewportSize({width:390,height:844});await page.goto(origin);
     await page.locator('.menu-toggle').click();assert(await page.locator('#navigation').isVisible());await page.keyboard.press('Escape');assert(!await page.locator('#navigation').isVisible());
     await page.locator('.menu-toggle').click();await page.locator('#navigation a[href="#product"]').click();assert(!await page.locator('#navigation').isVisible());
-    await page.locator('.menu-toggle').click();await page.setViewportSize({width:1440,height:1000});await page.setViewportSize({width:390,height:844});assert.equal(await page.locator('.menu-toggle').getAttribute('aria-expanded'),'false');
+    await page.locator('.menu-toggle').click();await page.setViewportSize({width:1440,height:1000});
+    // The menu closes on the media-query change, which only fires once a frame renders at the wider size.
+    await page.waitForFunction(()=>document.querySelector('.menu-toggle').getAttribute('aria-expanded')==='false');await page.setViewportSize({width:390,height:844});assert.equal(await page.locator('.menu-toggle').getAttribute('aria-expanded'),'false');
     for(const selector of ['.header-actions a[href="/app/"]','.welcome-actions a[href="/app/"]','.product-window a[href="/app/"]','.closing-actions a[href="/app/"]']){
       await page.goto(origin);await page.locator(selector).click();await page.waitForURL(u=>u.pathname==='/app/');assert(await page.locator('#criteria-form').isVisible());
     }

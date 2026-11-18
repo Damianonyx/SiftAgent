@@ -72,6 +72,7 @@ Configuration reference: [Vercel static configuration](https://vercel.com/docs/p
 - `dist/app/mascot.js`: the shared approved artwork and particle animation.
 - `dist/app/workspace.js`, `workspace.css`, `theme.js`: the web workspace (see WEB_APP.md).
 - `dist/app/fonts/`: local DM Sans, JetBrains Mono and Sift pixel fonts (OFL).
+- `dist/app/scene-brand.jpg`, `brand-rabbit.png`: brand-yellow versions of the approved artwork and logo rabbit for the workspace (`scripts/make-brand-art.py`).
 - `dist/assets/`: supplied brand images and local font.
 - `scripts/package-preview.py`: optional offline HTML and source ZIP packaging.
 - `vercel.json`: static deployment configuration.

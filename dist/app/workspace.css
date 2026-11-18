@@ -128,7 +128,7 @@ button:disabled{cursor:not-allowed;opacity:.55}
 .sidebar .brand{padding:4px 8px 14px}
 .brand strong{font:400 22px/1 SiftPixel,var(--sans);letter-spacing:.06em}
 .brand-tag{margin-left:2px;padding:2px 6px;border-radius:6px;background:var(--brand);color:var(--brand-ink);font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase}
-.brand-rabbit{display:block;width:28px;height:33px;background-image:url('reference-art.jpg');background-size:966.7px 483.35px;background-position:-33.78px -22.88px;background-repeat:no-repeat;flex:none;image-rendering:pixelated}
+.brand-rabbit{display:block;width:28px;height:33px;background:url('brand-rabbit.png') center/contain no-repeat;flex:none}
 .search-trigger{display:flex;align-items:center;gap:10px;width:100%;height:40px;margin-bottom:12px;padding:0 8px 0 12px;border-radius:12px;border:1px solid var(--line-2);background:var(--surface);color:var(--ink-3);font-size:13.5px;box-shadow:var(--shadow-1);transition:border-color .15s,color .15s}
 .search-trigger:hover{border-color:var(--line-3);color:var(--ink-2)}
 .search-trigger .icon{width:16px;height:16px}
@@ -576,7 +576,7 @@ dialog::backdrop{background:rgba(10,10,6,.42);backdrop-filter:blur(6px);-webkit-
   .topbar{gap:8px}
   .mobile-brand{display:inline-flex;gap:8px}
   .mobile-brand strong{font:400 20px/1 SiftPixel,var(--sans);letter-spacing:.06em}
-  .mobile-brand .brand-rabbit{width:24px;height:28px;background-size:828.6px 414.3px;background-position:-28.95px -19.6px}
+  .mobile-brand .brand-rabbit{width:24px;height:28px}
   .connection{height:32px;padding:0 10px;margin-right:2px;font-size:12px}
   .connect-cta .icon{display:none}
   .icon-button{width:40px;height:40px}
@@ -720,3 +720,7 @@ dialog::backdrop{background:rgba(10,10,6,.42);backdrop-filter:blur(6px);-webkit-
   .shell{padding-bottom:calc(76px + var(--safe-b))}
   .toast-region{bottom:calc(76px + var(--safe-b))}
 }
+
+/* The workspace scene uses the brand-yellow copy of the artwork. */
+.mascot-card[data-art] .scene-fallback{background-image:url('scene-brand.jpg')}
+
